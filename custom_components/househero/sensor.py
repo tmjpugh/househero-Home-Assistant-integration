@@ -13,9 +13,12 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import (
     DOMAIN,
     TICKET_PRIORITY_HIGH,
+    TICKET_PRIORITY_LOW,
+    TICKET_PRIORITY_MEDIUM,
     TICKET_STATUS_CLOSED,
     TICKET_STATUS_IN_PROGRESS,
     TICKET_STATUS_OPEN,
+    TICKET_STATUS_WAITING,
 )
 from .coordinator import HouseHeroCoordinator
 
@@ -38,6 +41,7 @@ def _count_tickets(data: dict, home_id: int, **filters) -> int:
 
 
 SENSOR_TYPES: tuple[HouseHeroSensorEntityDescription, ...] = (
+    # ---- Status sensors ----
     HouseHeroSensorEntityDescription(
         key="open_tickets",
         name="Open Tickets",
@@ -57,6 +61,15 @@ SENSOR_TYPES: tuple[HouseHeroSensorEntityDescription, ...] = (
         ),
     ),
     HouseHeroSensorEntityDescription(
+        key="waiting_tickets",
+        name="Waiting Tickets",
+        icon="mdi:clock-outline",
+        native_unit_of_measurement="tickets",
+        value_fn=lambda data, home_id: _count_tickets(
+            data, home_id, status=TICKET_STATUS_WAITING
+        ),
+    ),
+    HouseHeroSensorEntityDescription(
         key="closed_tickets",
         name="Closed Tickets",
         icon="mdi:ticket-confirmation",
@@ -65,6 +78,7 @@ SENSOR_TYPES: tuple[HouseHeroSensorEntityDescription, ...] = (
             data, home_id, status=TICKET_STATUS_CLOSED
         ),
     ),
+    # ---- Priority sensors ----
     HouseHeroSensorEntityDescription(
         key="high_priority_tickets",
         name="High Priority Tickets",
@@ -74,6 +88,25 @@ SENSOR_TYPES: tuple[HouseHeroSensorEntityDescription, ...] = (
             data, home_id, priority=TICKET_PRIORITY_HIGH
         ),
     ),
+    HouseHeroSensorEntityDescription(
+        key="medium_priority_tickets",
+        name="Medium Priority Tickets",
+        icon="mdi:alert-outline",
+        native_unit_of_measurement="tickets",
+        value_fn=lambda data, home_id: _count_tickets(
+            data, home_id, priority=TICKET_PRIORITY_MEDIUM
+        ),
+    ),
+    HouseHeroSensorEntityDescription(
+        key="low_priority_tickets",
+        name="Low Priority Tickets",
+        icon="mdi:information-outline",
+        native_unit_of_measurement="tickets",
+        value_fn=lambda data, home_id: _count_tickets(
+            data, home_id, priority=TICKET_PRIORITY_LOW
+        ),
+    ),
+    # ---- Inventory sensor ----
     HouseHeroSensorEntityDescription(
         key="inventory_items",
         name="Inventory Items",

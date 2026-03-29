@@ -1,0 +1,59 @@
+create_ticket:
+  name: Create Ticket
+  description: >
+    Create a new maintenance ticket in House Hero. Designed for voice commands,
+    e.g. "create ticket living room Window is broken".
+  fields:
+    home_id:
+      name: Home ID
+      description: >
+        Numeric ID of the home to create the ticket in. Leave blank to use the
+        first home configured in House Hero.
+      required: false
+      example: 1
+      selector:
+        number:
+          min: 1
+          mode: box
+    title:
+      name: Title
+      description: Short description of the maintenance issue.
+      required: true
+      example: "Window is broken"
+      selector:
+        text:
+    room:
+      name: Room
+      description: Room where the issue is located.
+      required: true
+      example: "Living Room"
+      selector:
+        text:
+    priority:
+      name: Priority
+      description: Ticket priority (low, medium, high). Defaults to medium.
+      required: false
+      default: medium
+      example: medium
+      selector:
+        select:
+          options:
+            - low
+            - medium
+            - high
+    type:
+      name: Type
+      description: Ticket type. Defaults to maintenance.
+      required: false
+      default: maintenance
+      example: maintenance
+      selector:
+        text:
+    requester:
+      name: Requester
+      description: Name of the person or system creating the ticket.
+      required: false
+      default: "Home Assistant"
+      example: "Home Assistant"
+      selector:
+        text:

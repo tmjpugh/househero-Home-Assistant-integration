@@ -10,10 +10,12 @@ MOCK_HOMES = [
 ]
 
 MOCK_TICKETS = [
+    # Status variety
     {"id": 1, "home_id": 1, "title": "Fix roof", "status": "open", "priority": "high"},
     {"id": 2, "home_id": 1, "title": "Paint walls", "status": "open", "priority": "medium"},
-    {"id": 3, "home_id": 1, "title": "Replace filter", "status": "in_progress", "priority": "low"},
+    {"id": 3, "home_id": 1, "title": "Replace filter", "status": "in-progress", "priority": "low"},
     {"id": 4, "home_id": 1, "title": "Old task", "status": "closed", "priority": "low"},
+    {"id": 5, "home_id": 1, "title": "Waiting on part", "status": "waiting", "priority": "medium"},
 ]
 
 MOCK_INVENTORY = [
