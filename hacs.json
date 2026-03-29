@@ -1,0 +1,5 @@
+{
+  "name": "House Hero",
+  "description": "Home Assistant integration for the House Hero Maintenance Tracker",
+  "render_readme": true
+}
