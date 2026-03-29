@@ -5,6 +5,7 @@ DOMAIN = "househero"
 DEFAULT_SCAN_INTERVAL = 300  # seconds (5 minutes)
 
 CONF_API_URL = "api_url"
+CONF_HOME_ID = "home_id"
 
 # API paths
 API_HOMES = "/api/homes"

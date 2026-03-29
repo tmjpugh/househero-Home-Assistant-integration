@@ -13,9 +13,9 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 
 from .const import (
-    API_HOMES,
     API_TICKETS,
     CONF_API_URL,
+    CONF_HOME_ID,
     DOMAIN,
     SERVICE_CREATE_TICKET,
     TICKET_PRIORITY_HIGH,
@@ -30,7 +30,6 @@ PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 CREATE_TICKET_SCHEMA = vol.Schema(
     {
-        vol.Optional("home_id"): vol.Coerce(int),
         vol.Required("title"): cv.string,
         vol.Required("room"): cv.string,
         vol.Optional("priority", default=TICKET_PRIORITY_MEDIUM): vol.In(
@@ -45,38 +44,48 @@ CREATE_TICKET_SCHEMA = vol.Schema(
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up House Hero from a config entry."""
     api_url = entry.data[CONF_API_URL]
-    coordinator = HouseHeroCoordinator(hass, api_url)
+    home_id: int = entry.data[CONF_HOME_ID]
+    coordinator = HouseHeroCoordinator(hass, api_url, home_id)
     await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    # Register create_ticket service (only once across all entries)
+    # Register create_ticket service (only once; the handler resolves the
+    # right coordinator at call time via the entry_id in the service data or
+    # by falling back to the single configured entry)
     if not hass.services.has_service(DOMAIN, SERVICE_CREATE_TICKET):
 
         async def handle_create_ticket(call: ServiceCall) -> None:
             """Handle the create_ticket service call."""
-            # Pick the coordinator for the requested (or first) home
             coordinators: dict[str, HouseHeroCoordinator] = hass.data[DOMAIN]
             if not coordinators:
                 raise HomeAssistantError(
                     "No House Hero entries are loaded. Please check your configuration."
                 )
-            coordinator_instance = next(iter(coordinators.values()))
-            session = coordinator_instance._get_session()
 
-            api_base = coordinator_instance.api_url
-
-            # Resolve home_id — use the first home if not specified
-            home_id: int | None = call.data.get("home_id")
-            if home_id is None:
-                homes = coordinator_instance.data.get("homes", [])
-                if not homes:
+            # With multiple entries (one per home) pick the right coordinator.
+            # If only one entry exists, use it automatically.
+            # If multiple entries exist the caller must pass the target entry_id.
+            entry_id: str | None = call.data.get("entry_id")
+            if entry_id:
+                coordinator_instance = coordinators.get(entry_id)
+                if coordinator_instance is None:
                     raise HomeAssistantError(
-                        "No homes found in House Hero; cannot create ticket."
+                        f"No House Hero entry found for entry_id '{entry_id}'."
                     )
-                home_id = homes[0]["id"]
+            elif len(coordinators) == 1:
+                coordinator_instance = next(iter(coordinators.values()))
+            else:
+                raise HomeAssistantError(
+                    "Multiple House Hero homes are configured. Specify which home to "
+                    "use by passing the 'entry_id' field in the service call."
+                )
+
+            session = coordinator_instance._get_session()
+            api_base = coordinator_instance.api_url
+            home_id = coordinator_instance.home_id
 
             payload = {
                 "home_id": home_id,

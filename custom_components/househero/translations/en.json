@@ -3,18 +3,20 @@
     "step": {
       "user": {
         "title": "Connect to House Hero",
-        "description": "Enter the URL of your House Hero instance (e.g. http://192.168.1.100:8080).",
+        "description": "Enter the URL of your House Hero instance and the numeric ID of the home you want to monitor.",
         "data": {
-          "api_url": "API URL"
+          "api_url": "API URL",
+          "home_id": "Home ID"
         }
       }
     },
     "error": {
       "cannot_connect": "Unable to connect to the House Hero API. Please check the URL and try again.",
+      "home_not_found": "The specified Home ID was not found on this House Hero server. Please verify the ID and try again.",
       "unknown": "An unexpected error occurred. Please try again."
     },
     "abort": {
-      "already_configured": "This House Hero instance is already configured."
+      "already_configured": "This House Hero home is already configured."
     }
   }
 }

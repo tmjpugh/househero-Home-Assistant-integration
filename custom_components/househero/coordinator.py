@@ -21,11 +21,12 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class HouseHeroCoordinator(DataUpdateCoordinator):
-    """Coordinator that fetches all data from the House Hero API."""
+    """Coordinator that fetches data from the House Hero API for one home."""
 
-    def __init__(self, hass: HomeAssistant, api_url: str) -> None:
+    def __init__(self, hass: HomeAssistant, api_url: str, home_id: int) -> None:
         """Initialise the coordinator."""
         self.api_url = api_url.rstrip("/")
+        self.home_id = home_id
         self._session: aiohttp.ClientSession | None = None
 
         super().__init__(
@@ -54,17 +55,24 @@ class HouseHeroCoordinator(DataUpdateCoordinator):
     # ------------------------------------------------------------------
 
     async def _async_update_data(self) -> dict:
-        """Fetch homes, tickets, and inventory from the API."""
+        """Fetch homes, tickets, and inventory for the configured home."""
         session = self._get_session()
         try:
             homes = await self._fetch(session, API_HOMES)
-            tickets = await self._fetch(session, API_TICKETS)
-            inventory = await self._fetch(session, API_INVENTORY)
+            tickets = await self._fetch(
+                session, f"{API_TICKETS}?home_id={self.home_id}"
+            )
+            inventory = await self._fetch(
+                session, f"{API_INVENTORY}?home_id={self.home_id}"
+            )
         except aiohttp.ClientError as err:
             raise UpdateFailed(f"Error communicating with House Hero API: {err}") from err
 
+        # Filter the homes list to the configured home so sensors only see this home
+        home_list = [h for h in (homes if isinstance(homes, list) else []) if h.get("id") == self.home_id]
+
         return {
-            "homes": homes if isinstance(homes, list) else [],
+            "homes": home_list,
             "tickets": tickets if isinstance(tickets, list) else [],
             "inventory": inventory if isinstance(inventory, list) else [],
         }
