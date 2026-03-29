@@ -1,0 +1,11 @@
+{
+  "domain": "househero",
+  "name": "House Hero",
+  "version": "1.0.0",
+  "config_flow": true,
+  "documentation": "https://github.com/tmjpugh/househero",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": ["@tmjpugh"],
+  "iot_class": "local_polling"
+}
